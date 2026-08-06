@@ -10,17 +10,17 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    {
-        Schema::create('industris', function (Blueprint $table) {
+{
+    Schema::create('industris', function (Blueprint $table) {
         $table->id();
-        $table->string('nama_perusahaan');
+        // Foreign Key ke tabel kompetensi_keahlians
+        $table->foreignId('kompetensi_id')->constrained('kompetensi_keahlians')->cascadeOnDelete();
+        $table->string('nama');
         $table->text('alamat')->nullable();
         $table->string('kontak_hrd')->nullable();
-        $table->integer('kuota')->default(0);
-        $table->text('syarat_khusus')->nullable();
         $table->timestamps();
-});
-    }
+    });
+}
 
     /**
      * Reverse the migrations.

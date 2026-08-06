@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\IndustriResource\Pages;
-use App\Filament\Resources\IndustriResource\RelationManagers;
-use App\Models\Industri;
+use App\Filament\Resources\KelasResource\Pages;
+use App\Filament\Resources\KelasResource\RelationManagers;
+use App\Models\Kelas;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -14,13 +14,12 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\TextColumn;
 
-class IndustriResource extends Resource
+class KelasResource extends Resource
 {
-    protected static ?string $model = Industri::class;
+    protected static ?string $model = Kelas::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
@@ -29,17 +28,18 @@ class IndustriResource extends Resource
         return $form
             ->schema([
                 Select::make('kompetensi_id')
-                    ->relationship('kompetensi', 'nama')
-                    ->label('Cocok untuk Jurusan?')
+                    ->relationship('kompetensi', 'nama') // Relasi ke tabel jurusan
+                    ->label('Jurusan / Kompetensi Keahlian')
                     ->required()
-                    ->preload(),
-                TextInput::make('nama')
-                    ->label('Nama Perusahaan')
+                    ->preload()
+                    ->searchable(),
+                TextInput::make('tingkat')
+                    ->label('Tingkat Kelas (Misal: 10, 11, 12)')
+                    ->numeric()
                     ->required(),
-                TextInput::make('kontak_hrd')
-                    ->label('Kontak HRD'),
-                Textarea::make('alamat')
-                    ->columnSpanFull(),
+                TextInput::make('nama')
+                    ->label('Nama Kelas (Misal: XI RPL 1)')
+                    ->required(),
             ]);
     }
 
@@ -47,9 +47,9 @@ class IndustriResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('nama')->label('Nama Perusahaan')->searchable(),
-                TextColumn::make('kompetensi.nama')->label('Kesesuaian Jurusan'),
-                TextColumn::make('kontak_hrd')->label('HRD'),
+                TextColumn::make('kompetensi.nama')->label('Jurusan')->sortable(),
+                TextColumn::make('tingkat')->sortable(),
+                TextColumn::make('nama')->label('Nama Kelas')->searchable(),
             ])
             ->filters([])
             ->actions([
@@ -72,9 +72,9 @@ class IndustriResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListIndustris::route('/'),
-            'create' => Pages\CreateIndustri::route('/create'),
-            'edit' => Pages\EditIndustri::route('/{record}/edit'),
+            'index' => Pages\ListKelas::route('/'),
+            'create' => Pages\CreateKelas::route('/create'),
+            'edit' => Pages\EditKelas::route('/{record}/edit'),
         ];
     }
 }
