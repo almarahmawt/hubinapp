@@ -17,6 +17,9 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
 
+use Illuminate\Database\Eloquent\Model;
+
+
 class PendaftaranPklResource extends Resource
 {
     protected static ?string $model = PendaftaranPkl::class;
@@ -30,13 +33,17 @@ class PendaftaranPklResource extends Resource
                 Select::make('siswa_id')
                     ->relationship('siswa', 'nama')
                     ->label('Nama Siswa')
-                    ->required()
-                    ->searchable()
-                    ->preload(),
+                    ->default(fn () => auth()->user()->hasRole('Siswa') ? auth()->user()->siswa?->id : null)
+                    ->disabled(fn () => auth()->user()->hasRole('Siswa')) // Gembok jika dia punya role Siswa
+                    ->dehydrated()
+                    ->required(),
                     
                 Select::make('lowongan_pkl_id')
-                    ->relationship('lowonganPkl', 'id') // Sementara pakai ID Lowongan
-                    ->label('ID Lowongan')
+                    ->relationship('lowonganPkl', 'id')
+                    ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->industri->nama} - Kuota: {$record->kuota}")
+                    ->label('Pilih Tempat PKL')
+                    ->searchable()
+                    ->preload()
                     ->required(),
                     
                 TextInput::make('nilai_pra_pkl')
@@ -50,6 +57,8 @@ class PendaftaranPklResource extends Resource
                         'Ditolak' => 'Ditolak',
                     ])
                     ->default('Menunggu')
+                    ->disabled(fn () => auth()->user()->hasRole('Siswa')) // Gembok jika dia punya role Siswa
+                    ->dehydrated()
                     ->required(),
             ]);
     }
@@ -89,5 +98,18 @@ class PendaftaranPklResource extends Resource
             'create' => Pages\CreatePendaftaranPkl::route('/create'),
             'edit' => Pages\EditPendaftaranPkl::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        if (auth()->user()->hasRole('Siswa')) {
+            // Jika akun belum disambungkan ke biodata, gunakan ID -1 (mustahil ada) agar tabel kosong
+            $siswaId = auth()->user()->siswa?->id ?? -1; 
+            $query->where('siswa_id', $siswaId);
+        }
+
+        return $query;
     }
 }

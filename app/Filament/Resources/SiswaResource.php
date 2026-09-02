@@ -27,6 +27,11 @@ class SiswaResource extends Resource
     {
         return $form
             ->schema([
+                Select::make('user_id')
+                    ->relationship('user', 'name')
+                    ->label('Akun Login (Opsional)')
+                    ->searchable()
+                    ->preload(),
                 Select::make('kompetensi_id')
                     ->relationship('kompetensi', 'nama')
                     ->label('Jurusan')
@@ -50,6 +55,7 @@ class SiswaResource extends Resource
                     ->label('Nama Lengkap Siswa')
                     ->required()
                     ->maxLength(255),
+                
             ]);
     }
 

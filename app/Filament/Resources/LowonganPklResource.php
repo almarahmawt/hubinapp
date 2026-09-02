@@ -54,6 +54,11 @@ class LowonganPklResource extends Resource
                 TextColumn::make('industri.nama')->label('Perusahaan')->searchable(),
                 TextColumn::make('periode.nama')->label('Periode'),
                 TextColumn::make('kuota')->badge(),
+                TextColumn::make('pendaftaran_count')
+                    ->counts('pendaftaran')
+                    ->label('Jumlah Pendaftar')
+                    ->badge()
+                    ->color(fn ($state, $record) => $state > $record->kuota ? 'danger' : 'success'),
             ])
             ->filters([])
             ->actions([

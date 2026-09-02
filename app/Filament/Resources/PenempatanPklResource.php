@@ -17,6 +17,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
 
+
 class PenempatanPklResource extends Resource
 {
     protected static ?string $model = PenempatanPkl::class;
@@ -97,5 +98,18 @@ class PenempatanPklResource extends Resource
             'create' => Pages\CreatePenempatanPkl::route('/create'),
             'edit' => Pages\EditPenempatanPkl::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        if (auth()->user()->hasRole('Siswa')) {
+            // Jika akun belum disambungkan ke biodata, gunakan ID -1 (mustahil ada) agar tabel kosong
+            $siswaId = auth()->user()->siswa?->id ?? -1; 
+            $query->where('siswa_id', $siswaId);
+        }
+
+        return $query;
     }
 }

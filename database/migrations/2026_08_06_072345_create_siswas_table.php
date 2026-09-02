@@ -15,13 +15,14 @@ return new class extends Migration
         $table->id();
         // Relasi ke akun login
         $table->foreignId('user_id')->nullable()->constrained('users')->cascadeOnDelete();
-        
         // Relasi ke master data yang sudah kita buat sebelumnya
         $table->foreignId('kelas_id')->constrained('kelas')->cascadeOnDelete();
         $table->foreignId('kompetensi_id')->constrained('kompetensi_keahlians')->cascadeOnDelete();
         
+        $table->string('nisn')->nullable()->unique();
         $table->string('nis');
         $table->string('nama');
+        $table->string('no_hp')->nullable();
         $table->timestamps();
     });
 }

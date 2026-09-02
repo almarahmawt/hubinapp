@@ -15,4 +15,9 @@ class LowonganPkl extends Model
     {
         return $this->belongsTo(PeriodePkl::class);
     }
+
+    public function pendaftaran()
+    {
+        return $this->hasMany(PendaftaranPkl::class);
+    }
 }
