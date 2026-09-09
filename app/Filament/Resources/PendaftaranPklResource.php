@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources;
 
+
+use App\Models\Siswa;
 use App\Filament\Resources\PendaftaranPklResource\Pages;
 use App\Filament\Resources\PendaftaranPklResource\RelationManagers;
 use App\Models\PendaftaranPkl;
@@ -16,8 +18,11 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Actions\Action;
+use Filament\Notifications\Notification;
 
 use Illuminate\Database\Eloquent\Model;
+
 
 
 class PendaftaranPklResource extends Resource
@@ -80,6 +85,38 @@ class PendaftaranPklResource extends Resource
             ])
             ->filters([])
             ->actions([
+               // Tombol Setujui (Hanya untuk Admin)
+                Tables\Actions\Action::make('setujui') // <-- Tambahkan Tables\
+                    ->label('Setujui')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->modalHeading('Setujui Pendaftaran')
+                    ->visible(fn () => auth()->user()->hasRole(['Admin','super_admin']))
+                    ->action(function (PendaftaranPkl $record) {
+                        $record->update(['status' => 'Disetujui']);
+                        
+                        \Filament\Notifications\Notification::make() // <-- Tambahkan \Filament\Notifications\
+                            ->title('Pendaftaran Disetujui')
+                            ->success()
+                            ->send();
+                    }),
+
+                // Tombol Tolak (Hanya untuk Admin)
+                Tables\Actions\Action::make('tolak') // <-- Tambahkan Tables\
+                    ->label('Tolak')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->visible(fn () => auth()->user()->hasRole(['Admin','super_admin']))
+                    ->action(function (PendaftaranPkl $record) {
+                        $record->update(['status' => 'Ditolak']);
+                        
+                        \Filament\Notifications\Notification::make() // <-- Tambahkan \Filament\Notifications\
+                            ->title('Pendaftaran Ditolak')
+                            ->danger()
+                            ->send();
+                    }),
                 Tables\Actions\EditAction::make(),
             ]);
     }

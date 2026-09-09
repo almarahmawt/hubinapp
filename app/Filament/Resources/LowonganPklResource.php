@@ -17,6 +17,10 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Actions\Action;
+use Filament\Notifications\Notification;
+use App\Models\PendaftaranPkl;
+use App\Models\Siswa;
 
 class LowonganPklResource extends Resource
 {
@@ -62,6 +66,54 @@ class LowonganPklResource extends Resource
             ])
             ->filters([])
             ->actions([
+                // Tombol Lamar (Hanya muncul untuk role Siswa)
+                Action::make('lamar')
+                    ->label('Lamar Sekarang')
+                    ->icon('heroicon-o-paper-airplane')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->modalHeading('Konfirmasi Pendaftaran')
+                    ->modalDescription('Apakah kamu yakin ingin melamar di lowongan ini?')
+                    ->modalSubmitActionLabel('Ya, Lamar!')
+                    ->visible(fn () => auth()->user()->hasRole(['Siswa', 'super_admin'])) // Hanya Siswa yang bisa melihat ini
+                    ->action(function ($record) {
+                        // Cari profil siswa berdasarkan user yang sedang login
+                        $siswa = Siswa::where('user_id', auth()->id())->first();
+
+                        if (!$siswa) {
+                            Notification::make()
+                                ->title('Gagal: Profil Siswa tidak ditemukan.')
+                                ->danger()
+                                ->send();
+                            return;
+                        }
+
+                        // Cek apakah siswa sudah melamar di tempat yang sama
+                        $sudahDaftar = PendaftaranPkl::where('siswa_id', $siswa->id)
+                            ->where('lowongan_pkl_id', $record->id)
+                            ->exists();
+
+                        if ($sudahDaftar) {
+                            Notification::make()
+                                ->title('Kamu sudah melamar di lowongan ini sebelumnya!')
+                                ->warning()
+                                ->send();
+                            return;
+                        }
+
+                        // Buat data pendaftaran baru
+                        PendaftaranPkl::create([
+                            'siswa_id' => $siswa->id,
+                            'lowongan_pkl_id' => $record->id,
+                            'status' => 'Menunggu',
+                        ]);
+
+                        Notification::make()
+                            ->title('Berhasil melamar! Silakan tunggu persetujuan.')
+                            ->success()
+                            ->send();
+                    }),
+
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
