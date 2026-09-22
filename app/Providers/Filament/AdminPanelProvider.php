@@ -21,6 +21,18 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
 {
+    public function boot(): void
+    {
+        \Filament\Actions\CreateAction::configureUsing(
+            fn (\Filament\Actions\CreateAction $action) => $action->label('New'),
+            isImportant: true,
+        );
+        \Filament\Tables\Actions\CreateAction::configureUsing(
+            fn (\Filament\Tables\Actions\CreateAction $action) => $action->label('New'),
+            isImportant: true,
+        );
+    }
+
     public function panel(Panel $panel): Panel
     {
         return $panel
@@ -28,6 +40,8 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->brandLogo(asset('images/logo-jalin.png'))
+            ->brandLogoHeight('5rem')
             ->colors([
                 'primary' => Color::Amber,
             ])

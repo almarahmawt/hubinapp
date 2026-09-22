@@ -20,12 +20,14 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\RichEditor;
+use Filament\Notifications\Notification;
+use Illuminate\Database\Eloquent\Collection;
 
 class JurnalPklResource extends Resource
 {
     protected static ?string $model = JurnalPkl::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-book-open';
 
     protected static ?string $navigationLabel = 'Jurnal PKL';
 
@@ -40,13 +42,14 @@ class JurnalPklResource extends Resource
                 // ----------------------------------------------------
                 Select::make('penempatan_pkl_id')
                     ->label('Siswa & Tempat PKL')
-                    ->relationship('penempatanPkl', 'id')
-                    ->getOptionLabelFromRecordUsing(function ($record) {
-                        $namaSiswa = $record->siswa->nama ?? 'Siswa Tidak Ditemukan';
-                        $namaIndustri = $record->industri->nama_industri ?? 'Industri Tidak Ditemukan';
-                        return "{$namaSiswa} - {$namaIndustri}";
-                    })
+                    ->options(fn () => PenempatanPkl::with(['siswa', 'industri'])
+                        ->get()
+                        ->mapWithKeys(fn ($record) => [
+                            $record->id => ($record->siswa->nama ?? 'Siswa Tidak Ditemukan')
+                                . ' - ' . ($record->industri->nama ?? 'Industri Tidak Ditemukan'),
+                        ]))
                     ->searchable()
+                    ->preload()
                     // Sembunyikan untuk Siswa (karena penempatan_pkl_id di-inject di CreateJurnalPkl.php)
                     ->hidden(fn () => Siswa::where('user_id', auth()->id())->exists()),
 
@@ -148,6 +151,11 @@ class JurnalPklResource extends Resource
                     ->searchable()
                     ->sortable(),
 
+                Tables\Columns\TextColumn::make('penempatanPkl.siswa.kelas.nama')
+                    ->label('Kelas')
+                    ->searchable()
+                    ->sortable(),
+
                 Tables\Columns\TextColumn::make('status_kehadiran')
                     ->label('Kehadiran')
                     ->badge()
@@ -160,6 +168,7 @@ class JurnalPklResource extends Resource
 
                 Tables\Columns\TextColumn::make('deskripsi_kegiatan')
                     ->label('Kegiatan')
+                    ->formatStateUsing(fn (?string $state): string => \Illuminate\Support\Str::of($state ?? '')->stripTags()->squish())
                     ->limit(40)
                     ->default('-'),
 
@@ -188,10 +197,66 @@ class JurnalPklResource extends Resource
                     ]),
             ])
             ->actions([
+                Tables\Actions\Action::make('setujui_validasi')
+                    ->label('Validasi')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->modalHeading('Validasi Jurnal PKL')
+                    ->modalDescription('Setujui jurnal ini?')
+                    ->visible(fn (JurnalPkl $record) => auth()->user()->hasRole(['Guru', 'Staf PKL', 'Admin', 'super_admin'])
+                        && $record->status_validasi !== 'Disetujui')
+                    ->action(function (JurnalPkl $record) {
+                        $record->update(['status_validasi' => 'Disetujui']);
+
+                        Notification::make()
+                            ->title('Jurnal berhasil divalidasi')
+                            ->success()
+                            ->send();
+                    }),
+                Tables\Actions\Action::make('revisi_validasi')
+                    ->label('Revisi')
+                    ->icon('heroicon-o-arrow-uturn-left')
+                    ->color('warning')
+                    ->form([
+                        Textarea::make('catatan_pembimbing')
+                            ->label('Catatan Pembimbing')
+                            ->required()
+                            ->default(fn (JurnalPkl $record) => $record->catatan_pembimbing),
+                    ])
+                    ->visible(fn (JurnalPkl $record) => auth()->user()->hasRole(['Guru', 'Staf PKL', 'Admin', 'super_admin'])
+                        && $record->status_validasi !== 'Disetujui')
+                    ->action(function (array $data, JurnalPkl $record) {
+                        $record->update([
+                            'status_validasi' => 'Revisi',
+                            'catatan_pembimbing' => $data['catatan_pembimbing'],
+                        ]);
+
+                        Notification::make()
+                            ->title('Jurnal dikembalikan untuk revisi')
+                            ->warning()
+                            ->send();
+                    }),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\BulkAction::make('validasi')
+                        ->label('Validasi')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Validasi Jurnal PKL Terpilih')
+                        ->visible(fn () => auth()->user()->hasRole(['Guru', 'Staf PKL', 'Admin', 'super_admin']))
+                        ->action(function (Collection $records) {
+                            $records->each(fn (JurnalPkl $record) => $record->update(['status_validasi' => 'Disetujui']));
+
+                            Notification::make()
+                                ->title('Jurnal terpilih berhasil divalidasi')
+                                ->success()
+                                ->send();
+                        })
+                        ->deselectRecordsAfterCompletion(),
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);

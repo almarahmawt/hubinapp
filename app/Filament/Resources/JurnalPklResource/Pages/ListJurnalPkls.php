@@ -5,6 +5,8 @@ namespace App\Filament\Resources\JurnalPklResource\Pages;
 use App\Filament\Resources\JurnalPklResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ListJurnalPkls extends ListRecords
 {
@@ -13,7 +15,53 @@ class ListJurnalPkls extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('export')
+                ->label('Export')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->color('gray')
+                ->action(fn () => $this->exportJurnalPkl()),
             Actions\CreateAction::make(),
         ];
+    }
+
+    protected function exportJurnalPkl(): StreamedResponse
+    {
+        $records = $this->getFilteredSortedTableQuery()
+            ->with('penempatanPkl.siswa.kelas', 'penempatanPkl.industri')
+            ->get();
+
+        $fileName = 'jurnal-pkl-' . now()->format('Y-m-d-His') . '.csv';
+
+        return response()->streamDownload(function () use ($records) {
+            $handle = fopen('php://output', 'w');
+
+            fputcsv($handle, [
+                'Tanggal',
+                'Nama Siswa',
+                'Kelas',
+                'Industri',
+                'Status Kehadiran',
+                'Deskripsi Kegiatan',
+                'Status Validasi',
+                'Catatan Pembimbing',
+            ]);
+
+            foreach ($records as $record) {
+                fputcsv($handle, [
+                    optional($record->tanggal)->format('d-m-Y') ?? $record->tanggal,
+                    $record->penempatanPkl?->siswa?->nama ?? '-',
+                    $record->penempatanPkl?->siswa?->kelas?->nama ?? '-',
+                    $record->penempatanPkl?->industri?->nama ?? '-',
+                    $record->status_kehadiran,
+                    Str::of($record->deskripsi_kegiatan ?? '-')->stripTags()->squish(),
+                    $record->status_validasi,
+                    $record->catatan_pembimbing ?? '-',
+                ]);
+            }
+
+            fclose($handle);
+        }, $fileName, [
+            'Content-Type' => 'text/csv',
+        ]);
     }
 }

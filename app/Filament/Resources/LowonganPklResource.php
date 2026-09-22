@@ -26,7 +26,11 @@ class LowonganPklResource extends Resource
 {
     protected static ?string $model = LowonganPkl::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-briefcase';
+
+    protected static ?string $modelLabel = 'Lowongan PKL';
+
+    protected static ?string $pluralModelLabel = 'Lowongan PKL';
 
     public static function form(Form $form): Form
     {

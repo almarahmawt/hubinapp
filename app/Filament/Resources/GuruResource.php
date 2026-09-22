@@ -14,22 +14,33 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\TextColumn;
 
 class GuruResource extends Resource
 {
     protected static ?string $model = Guru::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-user';
+
+    protected static ?string $modelLabel = 'Guru';
+
+    protected static ?string $pluralModelLabel = 'Guru';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
+                Select::make('user_id')
+                    ->relationship('user', 'name')
+                    ->label('Akun Login (Opsional)')
+                    ->searchable()
+                    ->preload(),
+
                 TextInput::make('nip')
                     ->label('NIP (Opsional)')
                     ->maxLength(255),
-                    
+
                 TextInput::make('nama')
                     ->label('Nama Lengkap Guru')
                     ->required()

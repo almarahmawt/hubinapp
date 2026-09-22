@@ -22,7 +22,11 @@ class PenempatanPklResource extends Resource
 {
     protected static ?string $model = PenempatanPkl::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-map-pin';
+
+    protected static ?string $modelLabel = 'Penempatan PKL';
+
+    protected static ?string $pluralModelLabel = 'Penempatan PKL';
 
     public static function form(Form $form): Form
     {
@@ -68,6 +72,7 @@ class PenempatanPklResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('siswa.nama')->label('Siswa')->searchable(),
+                TextColumn::make('siswa.kelas.nama')->label('Kelas')->searchable()->sortable(),
                 TextColumn::make('industri.nama')->label('Tempat PKL')->searchable(),
                 TextColumn::make('guru.nama')->label('Pembimbing')->searchable(),
                 TextColumn::make('status')

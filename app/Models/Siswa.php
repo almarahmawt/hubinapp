@@ -20,4 +20,9 @@ class Siswa extends Model
     {
         return $this->belongsTo(KompetensiKeahlian::class, 'kompetensi_id');
     }
+
+    public function penempatanPkl()
+    {
+        return $this->hasMany(PenempatanPkl::class);
+    }
 }

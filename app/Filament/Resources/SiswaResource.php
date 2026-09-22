@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\SiswaResource\Pages;
 use App\Filament\Resources\SiswaResource\RelationManagers;
+use App\Models\Guru;
 use App\Models\Siswa;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -21,7 +22,11 @@ class SiswaResource extends Resource
 {
     protected static ?string $model = Siswa::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-user-group';
+
+    protected static ?string $modelLabel = 'Siswa';
+
+    protected static ?string $pluralModelLabel = 'Siswa';
 
     public static function form(Form $form): Form
     {
@@ -92,6 +97,23 @@ class SiswaResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        $user = auth()->user();
+
+        if ($user && $user->hasRole('Guru') && ! $user->hasRole('super_admin')) {
+            $guru = Guru::where('user_id', $user->id)->first();
+
+            $query->whereHas('penempatanPkl', function (Builder $subQuery) use ($guru) {
+                $subQuery->where('guru_id', $guru?->id ?? 0);
+            });
+        }
+
+        return $query;
     }
 
     public static function getRelations(): array

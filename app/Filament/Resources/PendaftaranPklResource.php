@@ -29,7 +29,11 @@ class PendaftaranPklResource extends Resource
 {
     protected static ?string $model = PendaftaranPkl::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
+
+    protected static ?string $modelLabel = 'Pendaftaran PKL';
+
+    protected static ?string $pluralModelLabel = 'Pendaftaran PKL';
 
     public static function form(Form $form): Form
     {
@@ -73,6 +77,7 @@ class PendaftaranPklResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('siswa.nama')->label('Siswa')->searchable(),
+                TextColumn::make('siswa.kelas.nama')->label('Kelas')->searchable()->sortable(),
                 TextColumn::make('lowonganPkl.id')->label('ID Lowongan'),
                 TextColumn::make('nilai_pra_pkl')->label('Nilai'),
                 TextColumn::make('status')
@@ -92,7 +97,7 @@ class PendaftaranPklResource extends Resource
                     ->color('success')
                     ->requiresConfirmation()
                     ->modalHeading('Setujui Pendaftaran')
-                    ->visible(fn () => auth()->user()->hasRole(['Admin','super_admin']))
+                    ->visible(fn (PendaftaranPkl $record) => auth()->user()->hasRole(['Admin','super_admin']) && $record->status === 'Menunggu')
                     ->action(function (PendaftaranPkl $record) {
                         $record->update(['status' => 'Disetujui']);
                         
@@ -108,7 +113,7 @@ class PendaftaranPklResource extends Resource
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->requiresConfirmation()
-                    ->visible(fn () => auth()->user()->hasRole(['Admin','super_admin']))
+                    ->visible(fn (PendaftaranPkl $record) => auth()->user()->hasRole(['Admin','super_admin']) && $record->status === 'Menunggu')
                     ->action(function (PendaftaranPkl $record) {
                         $record->update(['status' => 'Ditolak']);
                         
