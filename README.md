@@ -1,58 +1,237 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Hubin (Hubungan Industri) Management System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplikasi manajemen Hubungan Industri (Hubin) berbasis **Laravel 13** dan **Filament PHP** untuk pengelolaan Praktik Kerja Lapangan (PKL), kemitraan industri, serta data siswa dan guru. Sistem ini disiapkan untuk mendukung eksekusi berbasis lingkungan lokal tradisional maupun kontainerisasi **Docker** berkinerja tinggi.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 📋 Daftar Isi
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- [Tech Stack](#-tech-stack)
+- [Fitur & Struktur Migrasi Database](#-fitur--struktur-migrasi-database)
+- [Panduan Instalasi Lokal (Non-Docker)](#-panduan-instalasi-lokal-non-docker--standard)
+- [Arsitektur & Konfigurasi Docker](#-arsitektur--konfigurasi-docker-recommended)
+- [Migrasi Data & Reset Sequence PostgreSQL](#-panduan-migrasi-data--reset-sequence-postgresql)
+- [Deployment ke Production (VPS)](#-panduan-deployment-ke-production-vps)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## 🛠 Tech Stack
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- **Framework**: Laravel 13 & Filament PHP
+- **Runtime**: PHP 8.4 (Alpine-based)
+- **Database**: PostgreSQL 16
+- **Web Server**: Nginx (Alpine-based)
+- **Containerization**: Docker & Docker Compose
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+## 🚀 Fitur & Struktur Migrasi Database
 
-## Agentic Development
+Aplikasi ini mencakup modul utama yang dikelola melalui migrasi database berikut:
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+| Kategori | Tabel Database | Deskripsi Fungsi |
+| :--- | :--- | :--- |
+| **Autentikasi & Akses** | `users`, `roles`, `permissions` | Autentikasi user & manajemen RBAC (Spatie Permission) |
+| **Master Data** | `kompetensi_keahlians`, `kelas`, `gurus`, `siswas` | Data pendidik, peserta didik, serta keahlian |
+| **Kemitraan Industri** | `industris`, `periode_pkls`, `lowongan_pkls` | Data perusahaan mitra dan pembukaan lowongan PKL |
+| **Operasional PKL** | `pendaftaran_pkls`, `penempatan_pkls` | Pengajuan dan pemetaan penempatan siswa PKL |
+| **Jurnal & Evaluasi** | `jurnal_pkls` | Log harian kegiatan PKL & pembiasaan budaya kerja |
+
+---
+
+## 💻 Panduan Instalasi Lokal (Non-Docker / Standard)
+
+Gunakan metode ini jika Anda ingin menjalankan aplikasi langsung menggunakan PHP & PostgreSQL yang terinstall di OS lokal (Windows/Linux/Mac).
+
+### 1. Prasyarat
+- PHP >= 8.4
+- Composer 2.x
+- PostgreSQL 16
+- Node.js & NPM (Opsional untuk kompilasi aset)
+
+### 2. Langkah Instalasi
 
 ```bash
-composer require laravel/boost --dev
+# 1. Clone repository
+git clone https://github.com/username/hubinapp.git
+cd hubinapp
 
-php artisan boost:install
+# 2. Install dependensi PHP
+composer install
+
+# 3. Salin file environment
+cp .env.example .env
+
+# 4. Generate Application Key
+php artisan key:generate
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Sesuaikan konfigurasi database di `.env` lokal:
 
-## Contributing
+```env
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=hubin
+DB_USERNAME=postgres
+DB_PASSWORD=your_password
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+# 5. Jalankan migrasi dan seeder
+php artisan migrate --seed
 
-## Code of Conduct
+# 6. Buat storage link
+php artisan storage:link
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# 7. (Opsional) Install & compile asset frontend
+npm install
+npm run dev
 
-## Security Vulnerabilities
+# 8. Jalankan server lokal
+php artisan serve
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Aplikasi dapat diakses di `http://localhost:8000`.
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 🐳 Arsitektur & Konfigurasi Docker (Recommended)
+
+Project ini menggunakan arsitektur Docker berbasis Alpine Linux yang ringan dan optimal, memisahkan web server, runtime PHP, dan database ke dalam container yang saling terisolasi.
+
+### 1. Struktur File & Folder Docker
+
+Sistem kontainerisasi dibangun menggunakan struktur direktori berikut:
+
+```text
+hubinapp/
+├── docker/
+│   └── nginx/
+│       └── app.conf         # Konfigurasi Virtual Host Nginx khusus untuk Laravel
+├── Dockerfile               # Blueprint image PHP 8.4-FPM (Alpine) beserta ekstensi (pgsql, gd, dll)
+├── docker-compose.yml       # Orkestrasi 3 service utama: app (PHP), web (Nginx), dan db (PostgreSQL)
+├── .env                     # Config environment OS Host lokal (untuk Tinker/Artisan lokal)
+└── .env.docker              # Config environment runtime container (otomatis me-replace .env di Docker)
+```
+
+**Penjelasan Service (`docker-compose.yml`):**
+
+- **Service `app`**: Menjalankan aplikasi Laravel via PHP-FPM. Direktori lokal di-mount (sinkronisasi dua arah) sehingga perubahan kode (live reload) langsung terbaca tanpa perlu rebuild. File `.env.docker` otomatis terpetakan sebagai `.env` di dalam container.
+- **Service `web`**: Berperan sebagai Reverse Proxy dan melayani file statis, meneruskan request PHP ke service `app` melalui port 9000.
+- **Service `db`**: Database PostgreSQL dengan penyimpanan persisten (`postgres_data` volume). Port diakses dari host menggunakan `5433` agar tidak konflik dengan PostgreSQL instalasi Windows lokal (`5432`).
+
+### 2. Konfigurasi Dual Environment
+
+Sistem ini menggunakan teknik Volume Mapping agar Anda tidak perlu mengubah file `.env` berulang kali saat berpindah dari eksekusi lokal Windows ke Docker.
+
+Salin template environment untuk Docker:
+
+```bash
+cp .env.example .env.docker
+```
+
+Sesuaikan nilai database pada `.env.docker`:
+
+```env
+APP_ENV=local
+DB_CONNECTION=pgsql
+DB_HOST=db           # Gunakan nama service 'db' (bukan 127.0.0.1)
+DB_PORT=5432         # Gunakan port internal Docker
+DB_DATABASE=hubin
+DB_USERNAME=postgres
+DB_PASSWORD=your_password
+```
+
+### 3. Menjalankan Container
+
+Jalankan perintah berikut di terminal root project Anda:
+
+```bash
+# Build custom image (PHP 8.4) dan jalankan seluruh service di background
+docker-compose up -d --build
+
+# Periksa status container (pastikan statusnya 'Up')
+docker-compose ps
+```
+
+Setelah berjalan, aplikasi dapat diakses di:
+
+- **Web Browser**: `http://localhost`
+- **Database DBeaver/Adminer**: `localhost:5433` (dari laptop/host)
+
+---
+
+## 🔄 Panduan Migrasi Data & Reset Sequence PostgreSQL
+
+Jika Anda memindahkan data dari database MySQL lama ke PostgreSQL Docker (misalnya menggunakan fitur Data Transfer di DBeaver), PostgreSQL memerlukan sinkronisasi ulang ID sequence (auto-increment).
+
+### Masalah
+
+Setelah impor data mentah selesai, pembuatan data baru via aplikasi akan gagal dengan error `SQLSTATE[23505]: Unique violation: ERROR: duplicate key value`.
+
+### Solusi: Reset Sequence via Tinker
+
+Masuk ke terminal Tinker di dalam container Docker:
+
+```bash
+docker-compose exec app php artisan tinker
+```
+
+Jalankan skrip pemulihan sequence berikut yang aman untuk tabel kosong maupun tabel bernilai ID non-numerik (seperti `sessions`):
+
+```php
+$tables = DB::select("SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'");
+
+foreach ($tables as $table) {
+    $tableName = $table->table_name;
+
+    if (Schema::hasColumn($tableName, 'id')) {
+        $seqResult = DB::selectOne("SELECT pg_get_serial_sequence(?, 'id') as seq", [$tableName]);
+
+        if ($seqResult && $seqResult->seq) {
+            $seq = $seqResult->seq;
+            $maxId = (int) (DB::table($tableName)->max('id') ?? 0);
+
+            if ($maxId > 0) {
+                DB::statement("SELECT setval(?, ?, true)", [$seq, $maxId]);
+                echo "Reset $seq to $maxId\n";
+            } else {
+                DB::statement("SELECT setval(?, 1, false)", [$seq]);
+                echo "Reset $seq (tabel $tableName kosong, ID berikutnya = 1)\n";
+            }
+        }
+    }
+}
+```
+
+---
+
+## 🚢 Panduan Deployment ke Production (VPS)
+
+### 1. Persiapan Server VPS
+
+- Pastikan VPS (Ubuntu 22.04 / 24.04 LTS disarankan) sudah terinstall Git, Docker Engine, dan Docker Compose Plugin.
+- Konfigurasi Firewall (UFW) untuk membuka port 80 (HTTP) dan 443 (HTTPS).
+
+### 2. Steps Deployment
+
+```bash
+# 1. Clone repository di server
+git clone https://github.com/username/hubinapp.git /var/www/hubinapp
+cd /var/www/hubinapp
+
+# 2. Buat file .env.docker untuk production
+cp .env.example .env.docker
+nano .env.docker
+# Ubah: APP_ENV=production, APP_DEBUG=false, sesuaikan DB_PASSWORD & APP_URL
+
+# 3. Jalankan container production
+docker-compose up -d --build
+
+# 4. Jalankan migrasi & optimasi cache di dalam container
+docker-compose exec app php artisan migrate --force
+docker-compose exec app php artisan config:cache
+docker-compose exec app php artisan route:cache
+docker-compose exec app php artisan view:cache
+```
