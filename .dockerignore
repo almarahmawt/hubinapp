@@ -1,0 +1,47 @@
+# Version Control
+.git
+.gitignore
+.gitattributes
+.github
+
+# Dependencies (Akan di-install ulang secara bersih di dalam container)
+/vendor
+/node_modules
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# Environment & Secrets (Keamanan: Mencegah credential lokal bocor ke image)
+.env
+.env.*
+!.env.example
+
+# Storage & Temporary Files (Mencegah log & cache lokal ikut ter-copy)
+/storage/*.key
+/storage/app/*
+!/storage/app/.gitignore
+/storage/framework/cache/*
+!/storage/framework/cache/.gitignore
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+/storage/logs/*
+!/storage/logs/.gitignore
+
+# Testing
+/tests
+phpunit.xml
+pest.php
+
+# IDE & Config Editor
+.idea
+.vscode
+*.swp
+.DS_Store
+
+# Docker Setup Configs
+Dockerfile*
+docker-compose*
+.dockerignore
+README.md
