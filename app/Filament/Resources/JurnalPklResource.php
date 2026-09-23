@@ -374,6 +374,35 @@ class JurnalPklResource extends Resource
             ]);
     }
 
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        $user = auth()->user();
+
+        if ($user?->hasRole(['Staf PKL', 'super_admin'])) {
+            return $query;
+        }
+
+        if ($user?->hasRole('Guru')) {
+            $guru = \App\Models\Guru::where('user_id', $user->id)->first();
+
+            return $query->whereHas('penempatanPkl', function ($subQuery) use ($guru) {
+                $subQuery->where('guru_id', $guru?->id ?? 0);
+            });
+        }
+
+        if ($user?->hasRole('Siswa')) {
+            $siswa = Siswa::where('user_id', $user->id)->first();
+
+            return $query->whereHas('penempatanPkl', function ($subQuery) use ($siswa) {
+                $subQuery->where('siswa_id', $siswa?->id ?? 0);
+            });
+        }
+
+        return $query;
+    }
+
     public static function getRelations(): array
     {
         return [
