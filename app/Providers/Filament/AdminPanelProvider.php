@@ -40,7 +40,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->brandLogo(asset('images/logo-jalin.png'))
-            ->brandLogoHeight('5rem')
+            ->brandLogoHeight('3.5rem')
             ->colors([
                 'primary' => Color::Amber,
             ])

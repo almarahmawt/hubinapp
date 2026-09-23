@@ -26,7 +26,7 @@ class SiswaPanelProvider extends PanelProvider
             ->id('siswa')
             ->path('siswa')
             ->brandLogo(asset('images/logo-jalin.png'))
-            ->brandLogoHeight('5rem')
+            ->brandLogoHeight('3.5rem')
             ->colors([
                 'primary' => Color::Amber,
             ])
