@@ -3,7 +3,6 @@
 namespace App\Providers\Filament;
 
 use Filament\Http\Middleware\Authenticate;
-use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -19,26 +18,13 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
-class AdminPanelProvider extends PanelProvider
+class SiswaPanelProvider extends PanelProvider
 {
-    public function boot(): void
-    {
-        \Filament\Actions\CreateAction::configureUsing(
-            fn (\Filament\Actions\CreateAction $action) => $action->label('New'),
-            isImportant: true,
-        );
-        \Filament\Tables\Actions\CreateAction::configureUsing(
-            fn (\Filament\Tables\Actions\CreateAction $action) => $action->label('New'),
-            isImportant: true,
-        );
-    }
-
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->default()
-            ->id('admin')
-            ->path('admin')
+            ->id('siswa')
+            ->path('siswa')
             ->brandLogo(asset('images/logo-jalin.png'))
             ->brandLogoHeight('5rem')
             ->colors([
@@ -64,9 +50,6 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
-            ])
-            ->plugins([
-                FilamentShieldPlugin::make(),
             ])
             ->authMiddleware([
                 Authenticate::class,
