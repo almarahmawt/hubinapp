@@ -35,12 +35,20 @@ class ListJurnalPkls extends ListRecords
         return response()->streamDownload(function () use ($records) {
             $handle = fopen('php://output', 'w');
 
+            // BOM supaya Excel membaca file sebagai UTF-8 (karakter "–" dkk tidak jadi mojibake)
+            fwrite($handle, "\xEF\xBB\xBF");
+
             fputcsv($handle, [
                 'Tanggal',
                 'Nama Siswa',
                 'Kelas',
                 'Industri',
                 'Status Kehadiran',
+                'Kedisiplinan',
+                'Sopan Santun & Komunikasi',
+                'Tanggung Jawab & Etos Kerja',
+                'Kepatuhan & Keselamatan Kerja',
+                'Budaya Kerja 5R',
                 'Deskripsi Kegiatan',
                 'Status Validasi',
                 'Catatan Pembimbing',
@@ -53,6 +61,11 @@ class ListJurnalPkls extends ListRecords
                     $record->penempatanPkl?->siswa?->kelas?->nama ?? '-',
                     $record->penempatanPkl?->industri?->nama ?? '-',
                     $record->status_kehadiran,
+                    $record->kedisiplinan ?? '-',
+                    $record->sopan_santun_komunikasi ?? '-',
+                    $record->tanggung_jawab_etos_kerja ?? '-',
+                    $record->kepatuhan_keselamatan_kerja ?? '-',
+                    filled($record->budaya_kerja_5r) ? implode(', ', $record->budaya_kerja_5r) : '-',
                     Str::of($record->deskripsi_kegiatan ?? '-')->stripTags()->squish(),
                     $record->status_validasi,
                     $record->catatan_pembimbing ?? '-',

@@ -20,6 +20,8 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Radio;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -56,7 +58,7 @@ class JurnalPklResource extends Resource
                 // ----------------------------------------------------
                 // 2. DATA KEHADIRAN & LOKASI
                 // ----------------------------------------------------
-                Section::make('Data Kehadiran & Lokasi')
+                Section::make('Data Kehadiran')
                     ->description('Pilih status kehadiranmu hari ini.')
                     ->schema([
                         Grid::make(2)->schema([
@@ -83,20 +85,77 @@ class JurnalPklResource extends Resource
                         Grid::make(2)->schema([
                             TextInput::make('latitude')->numeric()->readOnly(),
                             TextInput::make('longitude')->numeric()->readOnly(),
-                        ]),
+                        ])->hidden(),
                     ]),
 
                 // ----------------------------------------------------
-                // 3. REFLEKSI & JURNAL KEGIATAN
+                // 3. PEMBIASAAN & BUDAYA KERJA HARIAN PKL
                 // ----------------------------------------------------
-                Section::make('Refleksi & Jurnal Kegiatan')
+                Section::make('Pembiasaan & Budaya Kerja Harian PKL')
+                    ->description('Jawab pertanyaan berikut sebelum mengisi aktivitas hari ini.')
+                    ->visible(fn (\Filament\Forms\Get $get) => $get('status_kehadiran') === 'Hadir')
+                    ->schema([
+                        Radio::make('kedisiplinan')
+                            ->label('1. Kedisiplinan. Apakah saya hadir tepat waktu, siap bekerja, dan mengikuti ketentuan jam kerja hari ini?')
+                            ->options([
+                                'Sudah saya lakukan dengan baik' => 'Sudah saya lakukan dengan baik',
+                                'Sudah saya lakukan, tetapi masih perlu diperbaiki' => 'Sudah saya lakukan, tetapi masih perlu diperbaiki',
+                                'Belum saya lakukan' => 'Belum saya lakukan',
+                            ])
+                            ->required(fn (\Filament\Forms\Get $get) => $get('status_kehadiran') === 'Hadir'),
+
+                        Radio::make('sopan_santun_komunikasi')
+                            ->label('2. Sopan Santun & Komunikasi. Apakah saya berkomunikasi dengan sopan, jelas, dan santun, mendengarkan ketika orang lain berbicara, serta menyampaikan pertanyaan atau informasi dengan cara yang baik?')
+                            ->options([
+                                'Sudah saya lakukan dengan baik' => 'Sudah saya lakukan dengan baik',
+                                'Sudah saya lakukan, tetapi masih perlu diperbaiki' => 'Sudah saya lakukan, tetapi masih perlu diperbaiki',
+                                'Belum saya lakukan' => 'Belum saya lakukan',
+                            ])
+                            ->required(fn (\Filament\Forms\Get $get) => $get('status_kehadiran') === 'Hadir'),
+
+                        Radio::make('tanggung_jawab_etos_kerja')
+                            ->label('3. Tanggung Jawab & Etos Kerja. Apakah saya melaksanakan tugas dengan sungguh-sungguh, bertanggung jawab, berinisiatif, dan mau menerima masukan?')
+                            ->options([
+                                'Sudah saya lakukan dengan baik' => 'Sudah saya lakukan dengan baik',
+                                'Sudah saya lakukan, tetapi masih perlu diperbaiki' => 'Sudah saya lakukan, tetapi masih perlu diperbaiki',
+                                'Belum saya lakukan' => 'Belum saya lakukan',
+                            ])
+                            ->required(fn (\Filament\Forms\Get $get) => $get('status_kehadiran') === 'Hadir'),
+
+                        Radio::make('kepatuhan_keselamatan_kerja')
+                            ->label('4. Kepatuhan & Keselamatan Kerja. Apakah saya mematuhi tata tertib, SOP, ketentuan keselamatan kerja, serta menjaga fasilitas dan peralatan yang digunakan?')
+                            ->options([
+                                'Sudah saya lakukan dengan baik' => 'Sudah saya lakukan dengan baik',
+                                'Sudah saya lakukan, tetapi masih perlu diperbaiki' => 'Sudah saya lakukan, tetapi masih perlu diperbaiki',
+                                'Belum saya lakukan' => 'Belum saya lakukan',
+                            ])
+                            ->required(fn (\Filament\Forms\Get $get) => $get('status_kehadiran') === 'Hadir'),
+
+                        CheckboxList::make('budaya_kerja_5r')
+                            ->label('5. Budaya Kerja. Budaya kerja 5R apa yang sudah saya terapkan hari ini?')
+                            ->options([
+                                'Ringkas – memilah barang yang diperlukan dan tidak diperlukan' => 'Ringkas – memilah barang yang diperlukan dan tidak diperlukan',
+                                'Rapi – menata barang/peralatan pada tempatnya' => 'Rapi – menata barang/peralatan pada tempatnya',
+                                'Resik – menjaga kebersihan tempat dan peralatan kerja' => 'Resik – menjaga kebersihan tempat dan peralatan kerja',
+                                'Rawat – menjaga kondisi dan keteraturan lingkungan kerja' => 'Rawat – menjaga kondisi dan keteraturan lingkungan kerja',
+                                'Rajin – membiasakan 5R secara konsisten dan disiplin' => 'Rajin – membiasakan 5R secara konsisten dan disiplin',
+                                'Belum menerapkan 5R hari ini' => 'Belum menerapkan 5R hari ini',
+                            ])
+                            ->columns(1),
+                    ]),
+
+                // ----------------------------------------------------
+                // 4. REFLEKSI & JURNAL KEGIATAN
+                // ----------------------------------------------------
+                Section::make('Jurnal Kegiatan')
                     ->description('Ceritakan apa yang kamu kerjakan dan pelajari hari ini.')
                     // HANYA MUNCUL JIKA KETERANGANNYA "HADIR"
                     ->visible(fn (\Filament\Forms\Get $get) => $get('status_kehadiran') === 'Hadir')
                     ->schema([
                         TextInput::make('orang_disapa')
                             ->label('Siapa orang di tempat kerja yang kamu sapa hari ini?')
-                            ->placeholder('Contoh: Pak Budi (Supervisor), Resepsionis, dll.'),
+                            ->placeholder('Contoh: Pak Budi (Supervisor), Resepsionis, dll.')
+                            ->hidden(),
 
                         Grid::make(2)->schema([
                             Toggle::make('persiapan_alat')
@@ -105,7 +164,7 @@ class JurnalPklResource extends Resource
                             Toggle::make('membereskan_alat')
                                 ->label('Saya sudah membereskan alat setelah bekerja')
                                 ->onColor('success'),
-                        ]),
+                        ])->hidden(),
 
                         RichEditor::make('deskripsi_kegiatan')
                             ->label('Deskripsi Pekerjaan')
@@ -113,11 +172,12 @@ class JurnalPklResource extends Resource
 
                         FileUpload::make('foto_kegiatan')
                             ->label('Dokumentasi Visual (Foto/Screenshot)')
-                            ->directory('foto-jurnal'),
+                            ->directory('foto-jurnal')
+                            ->hidden(),
                     ]),
 
                 // ----------------------------------------------------
-                // 4. AREA VALIDASI PEMBIMBING / ADMIN
+                // 5. AREA VALIDASI PEMBIMBING / ADMIN
                 // ----------------------------------------------------
                 Section::make('Area Validasi Pembimbing')
                     // HANYA DITAMPILKAN UNTUK ADMIN ATAU SUPER ADMIN

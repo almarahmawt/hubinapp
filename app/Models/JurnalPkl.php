@@ -12,6 +12,10 @@ class JurnalPkl extends Model
     // Mengizinkan semua kolom untuk disimpan
     protected $guarded = [];
 
+    protected $casts = [
+        'budaya_kerja_5r' => 'array',
+    ];
+
     // Relasi yang dipanggil oleh Filament ->relationship('penempatanPkl', ...)
     public function penempatanPkl()
     {
