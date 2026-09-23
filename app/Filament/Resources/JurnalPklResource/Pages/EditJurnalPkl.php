@@ -13,7 +13,17 @@ class EditJurnalPkl extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\DeleteAction::make()
+                ->visible(fn () => JurnalPklResource::canEditJurnal($this->record)),
+        ];
+    }
+
+    protected function getFormActions(): array
+    {
+        return [
+            $this->getSaveFormAction()
+                ->visible(fn () => JurnalPklResource::canEditJurnal($this->record)),
+            $this->getCancelFormAction(),
         ];
     }
 }

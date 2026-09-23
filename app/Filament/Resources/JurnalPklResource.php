@@ -22,6 +22,7 @@ use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\Placeholder;
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -34,6 +35,26 @@ class JurnalPklResource extends Resource
     protected static ?string $navigationLabel = 'Jurnal PKL';
 
     protected static ?string $pluralModelLabel = 'Jurnal PKL';
+
+    /**
+     * Guru tidak boleh mengedit jurnal sama sekali. Staf PKL & super_admin selalu
+     * boleh mengedit walaupun jurnalnya sudah divalidasi. Role lain (mis. Siswa)
+     * hanya boleh mengedit selama status validasinya belum "Disetujui".
+     */
+    public static function canEditJurnal(JurnalPkl $record): bool
+    {
+        $user = auth()->user();
+
+        if ($user?->hasRole('Guru')) {
+            return false;
+        }
+
+        if ($user?->hasRole(['Staf PKL', 'super_admin'])) {
+            return true;
+        }
+
+        return $record->status_validasi !== 'Disetujui';
+    }
 
     public static function form(Form $form): Form
     {
@@ -54,6 +75,24 @@ class JurnalPklResource extends Resource
                     ->preload()
                     // Sembunyikan untuk Siswa (karena penempatan_pkl_id di-inject di CreateJurnalPkl.php)
                     ->hidden(fn () => Siswa::where('user_id', auth()->id())->exists()),
+
+                // ----------------------------------------------------
+                // CATATAN REVISI DARI PEMBIMBING (Untuk Siswa)
+                // ----------------------------------------------------
+                Section::make('Catatan Revisi dari Pembimbing')
+                    ->icon('heroicon-o-exclamation-triangle')
+                    ->iconColor('danger')
+                    ->extraAttributes([
+                        'style' => 'background-color: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.4);',
+                    ])
+                    ->visible(fn (?JurnalPkl $record) => $record
+                        && $record->status_validasi === 'Revisi'
+                        && filled($record->catatan_pembimbing))
+                    ->schema([
+                        Placeholder::make('catatan_pembimbing_display')
+                            ->hiddenLabel()
+                            ->content(fn (?JurnalPkl $record) => $record?->catatan_pembimbing),
+                    ]),
 
                 // ----------------------------------------------------
                 // 2. DATA KEHADIRAN & LOKASI
@@ -297,7 +336,8 @@ class JurnalPklResource extends Resource
                             ->warning()
                             ->send();
                     }),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->visible(fn (JurnalPkl $record) => static::canEditJurnal($record)),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -317,7 +357,19 @@ class JurnalPklResource extends Resource
                                 ->send();
                         })
                         ->deselectRecordsAfterCompletion(),
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->action(function (Collection $records) {
+                            $protected = $records->where('status_validasi', 'Disetujui');
+                            $records->reject(fn (JurnalPkl $record) => $record->status_validasi === 'Disetujui')
+                                ->each(fn (JurnalPkl $record) => $record->delete());
+
+                            if ($protected->isNotEmpty()) {
+                                Notification::make()
+                                    ->title($protected->count() . ' jurnal yang sudah divalidasi tidak dihapus')
+                                    ->warning()
+                                    ->send();
+                            }
+                        }),
                 ]),
             ]);
     }
