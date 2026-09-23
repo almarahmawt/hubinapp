@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Spatie\Permission\PermissionRegistrar;
 
 class LoginController extends Controller
 {
@@ -41,6 +42,10 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
+        // Pastikan role/permission yang dibaca selalu yang terbaru, bukan cache
+        // dari user sebelumnya yang login di sesi/proses yang sama.
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
         $path = $this->redirectPathForUser(Auth::user());
 
         if ($path === null) {
@@ -49,7 +54,11 @@ class LoginController extends Controller
             return back()->withErrors(['email' => 'Akun Anda belum memiliki role. Silakan hubungi Admin.']);
         }
 
-        return redirect()->intended($path);
+        // Selalu arahkan ke panel sesuai role saat ini, jangan pakai URL "intended"
+        // yang mungkin masih tersimpan dari percobaan akses panel lain sebelumnya.
+        $request->session()->forget('url.intended');
+
+        return redirect()->to($path);
     }
 
     public function destroy(Request $request): RedirectResponse
@@ -58,6 +67,8 @@ class LoginController extends Controller
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         return redirect()->route('login');
     }
