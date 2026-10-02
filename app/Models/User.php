@@ -14,11 +14,10 @@ use Illuminate\Notifications\Notifiable;
 
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'username'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser
 {
-
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, HasRoles;
 
@@ -48,7 +47,7 @@ class User extends Authenticatable implements FilamentUser
             'password' => 'hashed',
         ];
     }
-    
+
     public function siswa()
     {
         return $this->hasOne(Siswa::class);

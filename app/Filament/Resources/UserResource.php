@@ -26,26 +26,26 @@ class UserResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                TextInput::make('name')
-                    ->label('Nama Pengguna')
-                    ->required(),
-                TextInput::make('email')
-                    ->email()
-                    ->required(),
-                TextInput::make('password')
-                    ->password()
-                    ->dehydrateStateUsing(fn ($state) => Hash::make($state))
-                    ->dehydrated(fn ($state) => filled($state))
-                    ->required(fn (string $context): bool => $context === 'create'),
-                Select::make('roles')
-                    ->relationship('roles', 'name')
-                    ->multiple()
-                    ->preload()
-                    ->searchable()
-                    ->label('Hak Akses (Role)'),
-            ]);
+        return $form->schema([
+            TextInput::make('name')->label('Nama Pengguna')->required(),
+            TextInput::make('username')
+                ->label('Username')
+                ->required()
+                ->unique(ignoreRecord: true) // Wajib unik, tapi dikecualikan saat mengedit data miliknya sendiri
+                ->maxLength(255),
+            TextInput::make('email')->email()->required(),
+            TextInput::make('password')
+                ->password()
+                ->dehydrateStateUsing(fn($state) => Hash::make($state))
+                ->dehydrated(fn($state) => filled($state))
+                ->required(fn(string $context): bool => $context === 'create'),
+            Select::make('roles')
+                ->relationship('roles', 'name')
+                ->multiple()
+                ->preload()
+                ->searchable()
+                ->label('Hak Akses (Role)'),
+        ]);
     }
 
     public static function table(Table $table): Table
@@ -53,20 +53,22 @@ class UserResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name')->searchable(),
+                TextColumn::make('username')
+                    ->label('Username')
+                    ->searchable() // Agar bisa dicari via kolom pencarian
+                    ->sortable(), // Agar bisa diurutkan (A-Z)
                 TextColumn::make('email')->searchable(),
                 TextColumn::make('roles.name')->label('Role')->badge(),
             ])
             ->filters([])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-            ]);
+            ->actions([Tables\Actions\EditAction::make()]);
     }
 
     public static function getRelations(): array
     {
         return [
-            //
-        ];
+                //
+            ];
     }
 
     public static function getPages(): array
