@@ -16,6 +16,9 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Toggle;
 
 class GuruResource extends Resource
 {
@@ -29,57 +32,80 @@ class GuruResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                Select::make('user_id')
-                    ->relationship('user', 'name')
-                    ->label('Akun Login (Opsional)')
-                    ->searchable()
-                    ->preload(),
+        return $form->schema([
+            TextInput::make('nip')
+                ->label('NIP')
+                ->unique(ignoreRecord: true)
+                ->maxLength(30),
 
-                TextInput::make('nip')
-                    ->label('NIP (Opsional)')
-                    ->maxLength(255),
+            TextInput::make('gelar_depan')
+                ->label('Gelar Depan')
+                ->placeholder('Contoh: Dr. / Drs. / H.')
+                ->maxLength(50),
 
-                TextInput::make('nama')
-                    ->label('Nama Lengkap Guru')
-                    ->required()
-                    ->maxLength(255),
-            ]);
+            TextInput::make('nama')
+                ->label('Nama Lengkap (Tanpa Gelar)')
+                ->required()
+                ->maxLength(255),
+
+            TextInput::make('gelar_belakang')
+                ->label('Gelar Belakang')
+                ->placeholder('Contoh: S.Pd., M.Kom.')
+                ->maxLength(100),
+
+            Select::make('jenis_kelamin')
+                ->label('Jenis Kelamin')
+                ->options([
+                    'L' => 'Laki-laki',
+                    'P' => 'Perempuan',
+                ]),
+
+            TextInput::make('no_hp')
+                ->label('Nomor WhatsApp / HP')
+                ->tel()
+                ->maxLength(20),
+
+            Textarea::make('alamat')
+                ->label('Alamat Domisili')
+                ->columnSpanFull(),
+
+            Toggle::make('is_aktif')->label('Status Aktif')->default(true),
+        ]);
     }
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->columns([
-                TextColumn::make('nip')
-                    ->label('NIP')
-                    ->searchable(),
-                    
-                TextColumn::make('nama')
-                    ->label('Nama Guru')
-                    ->searchable()
-                    ->sortable(),
-            ])
-            ->filters([
-                //
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+        return $table->columns([
+            TextColumn::make('nip')->label('NIP')->searchable()->sortable(),
+
+            // Menggunakan Accessor nama_lengkap dari Model
+            TextColumn::make('nama_lengkap')
+                ->label('Nama Guru')
+                ->searchable(['nama', 'nip', 'gelar_depan', 'gelar_belakang'])
+                ->sortable(),
+
+            TextColumn::make('jenis_kelamin')
+                ->label('L/P')
+                ->badge()
+                ->formatStateUsing(
+                    fn(?string $state): string => match ($state) {
+                        'L' => 'Laki-laki',
+                        'P' => 'Perempuan',
+                        default => '-',
+                    },
+                ),
+
+            TextColumn::make('no_hp')->label('No. HP'),
+
+            IconColumn::make('is_aktif')->label('Aktif')->boolean(),
+        ]);
     }
 
     public static function getRelations(): array
     {
         return [
-            //
-        ];
+                //
+            ];
     }
 
     public static function getPages(): array
