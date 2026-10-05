@@ -29,15 +29,23 @@ class LoginController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
+        $request->validate([
+            'login' => ['required', 'string'],
             'password' => ['required'],
         ]);
 
+        $login = $request->input('login');
+        $loginField = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+
+        $credentials = [
+            $loginField => $login,
+            'password' => $request->input('password'),
+        ];
+
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             return back()
-                ->withInput($request->only('email'))
-                ->withErrors(['email' => 'Email atau password yang dimasukkan salah.']);
+                ->withInput($request->only('login'))
+                ->withErrors(['login' => 'Email/Username atau password yang dimasukkan salah.']);
         }
 
         $request->session()->regenerate();
@@ -51,7 +59,7 @@ class LoginController extends Controller
         if ($path === null) {
             Auth::logout();
 
-            return back()->withErrors(['email' => 'Akun Anda belum memiliki role. Silakan hubungi Admin.']);
+            return back()->withErrors(['login' => 'Akun Anda belum memiliki role. Silakan hubungi Admin.']);
         }
 
         // Selalu arahkan ke panel sesuai role saat ini, jangan pakai URL "intended"

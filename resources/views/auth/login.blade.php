@@ -192,6 +192,52 @@
                 box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
             }
 
+            .input-wrap input.has-toggle {
+                padding-right: 2.5rem;
+            }
+
+            .toggle-password {
+                position: absolute;
+                right: 0.5rem;
+                top: 50%;
+                transform: translateY(-50%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 1.75rem;
+                height: 1.75rem;
+                padding: 0;
+                border: none;
+                background: transparent;
+                color: #9ca3af;
+                cursor: pointer;
+                border-radius: 0.375rem;
+            }
+
+            .toggle-password:hover {
+                color: #4b5563;
+                background: #f3f4f6;
+            }
+
+            .toggle-password svg {
+                position: static;
+                width: 1.1rem;
+                height: 1.1rem;
+                transform: none;
+            }
+
+            .toggle-password .icon-eye-off {
+                display: none;
+            }
+
+            .toggle-password.is-visible .icon-eye {
+                display: none;
+            }
+
+            .toggle-password.is-visible .icon-eye-off {
+                display: block;
+            }
+
             .remember-row {
                 display: flex;
                 align-items: center;
@@ -294,21 +340,20 @@
                         @csrf
 
                         <div class="field">
-                            <label for="email">Email</label>
+                            <label for="login">Email atau Username</label>
                             <div class="input-wrap">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                    <path d="M3 4a2 2 0 0 0-2 2v.4l9 5.625L19 6.4V6a2 2 0 0 0-2-2H3Z" />
-                                    <path d="m19 8.525-9 5.625-9-5.625V14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.525Z" />
+                                    <path fill-rule="evenodd" d="M10 9a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm-7 7a7 7 0 0 1 14 0 1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Z" clip-rule="evenodd" />
                                 </svg>
                                 <input
-                                    id="email"
-                                    type="email"
-                                    name="email"
-                                    value="{{ old('email') }}"
+                                    id="login"
+                                    type="text"
+                                    name="login"
+                                    value="{{ old('login') }}"
                                     required
                                     autofocus
                                     autocomplete="username"
-                                    placeholder="nama@sekolah.com"
+                                    placeholder="nama@gmail.com atau username"
                                 >
                             </div>
                         </div>
@@ -326,7 +371,18 @@
                                     required
                                     autocomplete="current-password"
                                     placeholder="••••••••"
+                                    class="has-toggle"
                                 >
+                                <button type="button" class="toggle-password" id="togglePassword" aria-label="Tampilkan password">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="icon-eye">
+                                        <path d="M10 3.5c-4.08 0-7.44 2.61-8.74 6.25a.75.75 0 0 0 0 .5C2.56 13.89 5.92 16.5 10 16.5s7.44-2.61 8.74-6.25a.75.75 0 0 0 0-.5C17.44 6.11 14.08 3.5 10 3.5ZM10 14a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z" />
+                                        <path d="M10 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z" />
+                                    </svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="icon-eye-off">
+                                        <path fill-rule="evenodd" d="M3.28 2.22a.75.75 0 0 0-1.06 1.06l14.5 14.5a.75.75 0 1 0 1.06-1.06l-1.92-1.92c1.47-1.09 2.64-2.6 3.37-4.34a.75.75 0 0 0 0-.5C17.44 6.11 14.08 3.5 10 3.5c-1.47 0-2.84.35-4.05.97L3.28 2.22ZM7.52 6.46l1.4 1.4a2 2 0 0 1 2.22 2.22l1.4 1.4A4 4 0 0 0 7.52 6.46Z" clip-rule="evenodd" />
+                                        <path d="M2.53 4.34 4.5 6.31C3.24 7.26 2.21 8.54 1.54 10a.75.75 0 0 0 0 .5c1.3 3.64 4.66 6.25 8.74 6.25 1.2 0 2.33-.22 3.37-.63l2.03 2.03a.75.75 0 1 0 1.06-1.06L3.59 3.28a.75.75 0 0 0-1.06 1.06Z" />
+                                    </svg>
+                                </button>
                             </div>
                         </div>
 
@@ -342,5 +398,23 @@
                 </div>
             </div>
         </div>
+
+        <script>
+            (function () {
+                var toggleBtn = document.getElementById('togglePassword');
+                var passwordInput = document.getElementById('password');
+
+                if (!toggleBtn || !passwordInput) {
+                    return;
+                }
+
+                toggleBtn.addEventListener('click', function () {
+                    var isHidden = passwordInput.type === 'password';
+                    passwordInput.type = isHidden ? 'text' : 'password';
+                    toggleBtn.classList.toggle('is-visible', isHidden);
+                    toggleBtn.setAttribute('aria-label', isHidden ? 'Sembunyikan password' : 'Tampilkan password');
+                });
+            })();
+        </script>
     </body>
 </html>
