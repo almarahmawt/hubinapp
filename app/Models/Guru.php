@@ -30,4 +30,25 @@ class Guru extends Model
 
         return "{$depan}{$this->nama}{$belakang}";
     }
+
+    public function penempatanPkls()
+    {
+        return $this->hasMany(PenempatanPkl::class, 'guru_id');
+    }
+
+    public function jurnalPkls()
+    {
+        return $this->hasManyThrough(
+            JurnalPkl::class, // model tujuan
+            PenempatanPkl::class, // model perantara
+            'guru_id', // FK di penempatan_pkls
+            'penempatan_pkl_id', // FK di jurnal_pkls
+        );
+    }
+
+    // User.php (kalau gurus punya kolom user_id)
+    public function guru()
+    {
+        return $this->hasOne(Guru::class);
+    }
 }
