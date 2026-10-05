@@ -217,9 +217,7 @@ class ListJurnalPkls extends ListRecords
                         filled($record->budaya_kerja_5r)
                             ? implode(', ', $record->budaya_kerja_5r)
                             : '-',
-                        Str::of($record->deskripsi_kegiatan ?? '-')
-                            ->stripTags()
-                            ->squish(),
+                        \App\Models\JurnalPkl::plainTextKegiatan($record->deskripsi_kegiatan),
                         $record->status_validasi,
                         $record->catatan_pembimbing ?? '-',
                     ]);

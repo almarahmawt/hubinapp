@@ -365,11 +365,7 @@ class JurnalPklResource extends Resource
                 Tables\Columns\TextColumn::make('deskripsi_kegiatan')
                     ->label('Kegiatan')
                     ->formatStateUsing(
-                        fn(
-                            ?string $state,
-                        ): string => \Illuminate\Support\Str::of($state ?? '')
-                            ->stripTags()
-                            ->squish(),
+                        fn(?string $state): string => \App\Models\JurnalPkl::plainTextKegiatan($state),
                     )
                     ->limit(40)
                     ->default('-'),

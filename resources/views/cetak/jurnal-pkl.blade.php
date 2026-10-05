@@ -196,7 +196,7 @@
                             @if ($jurnal->status_kehadiran !== 'Hadir')
                                 <strong>{{ $jurnal->status_kehadiran }}</strong>
                             @else
-                                <div class="kegiatan-text">{{ \Illuminate\Support\Str::of($jurnal->deskripsi_kegiatan ?? '-')->stripTags()->squish() }}</div>
+                                <div class="kegiatan-text">{{ \App\Models\JurnalPkl::plainTextKegiatan($jurnal->deskripsi_kegiatan) }}</div>
                             @endif
                         </td>
                         <td class="col-paraf"></td>
